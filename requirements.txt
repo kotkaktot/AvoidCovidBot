@@ -1,0 +1,2 @@
+python-telegram-bot==12.5.1
+yandex-geocoder==2.0.0
