@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import telegram
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from settings import token, yandex_token, parse_content, radius
@@ -7,9 +8,12 @@ import requests
 import re
 import json
 import geopy.distance
+from tinydb import TinyDB, Query
+from datetime import datetime
 
 updater = Updater(token, use_context=True)
 ya_client = Client(yandex_token)
+db = TinyDB('users.json', ensure_ascii=False)
 
 
 def get_addresses():
@@ -53,15 +57,29 @@ def geo(update, context):
     # print(dic)
 
     if len(dic) > 0:
-        msg_text = '*Береги себя друг, по моим данным в радиусе {} км. зафиксированы случаи COVID-19:*\n\n'\
+        msg_text = '*Береги себя друг, по моим данным в радиусе {} км зафиксированы случаи COVID-19:*\n\n' \
             .format(radius, len(dic))
         for key in dic:
             msg_text += '{}\n\n'.format(str(key))
     else:
-        msg_text = '*Поздравляю друг, по моим данным в радиусе {} км. случаев COVID-19 не зафиксировано!*'.format(radius)
+        msg_text = '*Поздравляю друг, по моим данным в радиусе {} км случаев COVID-19 не зафиксировано!*'.format(
+            radius)
 
     # print(msg_text)
+    user_id = update.effective_user.id
+    username = '{} {}'.format(update.message.from_user.first_name, update.message.from_user.last_name)
+
+    db.insert({
+        'datetime': str(datetime.now()),
+        'user_id': user_id,
+        'username': str(username),
+        'latitude': lat,
+        'longitude': long
+    })
     update.message.reply_text(text=msg_text, parse_mode=telegram.ParseMode.MARKDOWN)
+
+    # queries count
+    # print(len(db.search(Query().user_id != 0)))
 
 
 def find_near_points(lat, long):
@@ -77,11 +95,22 @@ def find_near_points(lat, long):
     return near_points
 
 
+def start(update, context):
+    username = '{} {}'.format(update.message.from_user.first_name, update.message.from_user.last_name)
+    context.bot.send_message(chat_id=update.effective_chat.id,
+                             parse_mode = telegram.ParseMode.MARKDOWN,
+                             text='Привет {}! Я бот, который очень обеспокоен текущей ситуацией в столице.\n\n'
+                                  'Отправь мне твою геопозиция и я попытаюсь найти информацию'
+                                  ' о зарегистрированных случаях коронавирусной инфекции в радиусе *{} км* от тебя.'
+                             .format(username, radius))
+
+
 # parsing actual covid points from Mash
 if parse_content:
     get_addresses()
 
 geo_handler = MessageHandler(Filters.location, geo)
+updater.dispatcher.add_handler(CommandHandler('start', start))
 updater.dispatcher.add_handler(geo_handler)
 updater.start_polling()
 updater.idle()
