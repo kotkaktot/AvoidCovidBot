@@ -98,10 +98,13 @@ def find_near_points(lat, long):
 def start(update, context):
     username = '{} {}'.format(update.message.from_user.first_name, update.message.from_user.last_name)
     context.bot.send_message(chat_id=update.effective_chat.id,
-                             parse_mode = telegram.ParseMode.MARKDOWN,
+                             parse_mode=telegram.ParseMode.MARKDOWN,
                              text='Привет {}! Я бот, который очень обеспокоен текущей ситуацией в столице.\n\n'
-                                  'Отправь мне твою геопозиция и я попытаюсь найти информацию'
-                                  ' о зарегистрированных случаях коронавирусной инфекции в радиусе *{} км* от тебя.'
+                                  'Отправь мне твою геопозиция и я попытаюсь найти какую-то информацию'
+                                  ' о зарегистрированных случаях коронавирусной инфекции в радиусе *{} км* от тебя.\n'
+                                  'Моя информация ни в коем случае не может претендовать на истинность,'
+                                  ' она лишь оперирует опубликованными на https://mash.ru/letter/coronavirus-2/ '
+                                  'сведениями, которые также требуют проверки.'
                              .format(username, radius))
 
 
