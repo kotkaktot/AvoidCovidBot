@@ -108,12 +108,17 @@ def start(update, context):
                              .format(username, radius))
 
 
+def stat(update, context):
+    context.bot.send_message('Ко мне обратились уже {} раз(а).'.format(len(db.search(Query().user_id != 0))))
+
+
 # parsing actual covid points from Mash
 if parse_content:
     get_addresses()
 
 geo_handler = MessageHandler(Filters.location, geo)
 updater.dispatcher.add_handler(CommandHandler('start', start))
+updater.dispatcher.add_handler(CommandHandler('stat', stat))
 updater.dispatcher.add_handler(geo_handler)
 updater.start_polling()
 updater.idle()
