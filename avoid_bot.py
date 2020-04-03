@@ -109,7 +109,7 @@ def start(update, context):
 
 
 def stat(update, context):
-    context.bot.send_message('Ко мне обратились уже {} раз(а).'.format(str(len(db.search(Query().user_id != 0)))))
+    update.message.reply_text(text='Ко мне обратились уже {} раз(а).'.format(str(len(db.search(Query().user_id != 0)))))
 
 
 # parsing actual covid points from Mash
